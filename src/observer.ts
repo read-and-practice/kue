@@ -4,17 +4,12 @@ export interface IListener {
   update: Function;
 }
 
-// export class ListenerBase extends Function implements IListener {
-//   update(): void {}
-// }
-
 export class Observer {
   static observe(data: object): object {
     if (typeof(data) !== 'object') {
       return;
     }
 
-    // return Observer.observify(data);
     return new Observer(data);
   }
 

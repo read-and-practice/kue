@@ -64,7 +64,7 @@ export class Compile {
   }
 
   private compileText(node: Element, text: string): void {
-
+    CompileUtils.text(node, this.$vm, text);
   }
 
   private compile(node: Element): void {
@@ -111,7 +111,7 @@ export class Compile {
   private $fragment: DocumentFragment;
 }
 
-Compile.expressionReg = /\{\{(.*)\{\}/;
+Compile.expressionReg = /\{\{(.*)\}\}/;
 
 class CompileUtils {
   static text(node: Node, vm: object, exp: string): void {
@@ -119,7 +119,24 @@ class CompileUtils {
   }
 
   static html(node: Node, vm: object, exp: string): void {}
-  static model(node: Node, vm: object, exp: string): void {}
+
+  static model(node: Node, vm: object, exp: string): void {
+    this.bind(node, vm, exp, 'model');
+
+    const _this = this;
+    let val = CompileUtils.getVMVal(vm, exp) as any;
+    node.addEventListener('input', (ev: KeyboardEvent) => {
+      const newValue = (ev.target as HTMLInputElement).value;
+      if (val === newValue) {
+        return;
+      }  
+
+      _this.setVMVal(vm, exp, newValue);
+      val = newValue;
+    });
+
+  }
+
   static className(node: Node, vm: object, exp: string): void {}
 
   static bind(node: Node, vm: object, exp: string, directive: string): void {
@@ -147,6 +164,19 @@ class CompileUtils {
     exps.forEach((key:string) => val = val[key]);
     return val;
   }
+
+  private static setVMVal(vm: object, exp: string, value: string): void {
+    let val = vm;
+    let exps = exp.split('.');
+    exps.forEach((k: string, i: number) => {
+        // 非最后一个key，更新val的值
+        if (i < exps.length - 1) {
+            val = val[k];
+        } else {
+            val[k] = value;
+        }
+    });
+  }
 }
 
 class Updater {
@@ -165,7 +195,7 @@ class Updater {
   static classNameUpdater(node: Node, value: string): void {}
 
   static modelUpdater(node: Node, value: string): void {
-    (node as Attr).value = typeof value === 'undefined'
+    (node as HTMLInputElement).value = typeof value === 'undefined'
       ? ''
       : value;
   }

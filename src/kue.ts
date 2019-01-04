@@ -1,6 +1,5 @@
 import { Compile } from './compile';
-
-export * from './observer';
+import { Observer } from './observer';
 
 interface Options {
   data: object;
@@ -18,6 +17,8 @@ export default class Kue {
     });
 
     this.initComputed();
+
+    Observer.observe(data);
 
     this.$compile = new Compile(options.el || document.body, this);
   }
