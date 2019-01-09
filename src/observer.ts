@@ -17,7 +17,12 @@ export class Observer {
     // 递归observity子属性
     Observer.observe(value);
 
-    // 每一个被observify的属性 都对应自己的一个Dispatcher实例 存储在此闭包中
+    /**
+     * 每一个被observify的属性 都对应自己的一个Dispatcher实例 存储在此闭包中
+     * 每个dispatcher都有唯一的id
+     * 当这个被obserfity的属性被重新赋值时 值的变化就被set方法所劫持到
+     * 然后根据dispatcher.notify通知到dispatcher上所添加的监听器
+     */
     const dispatcher = new Dispatcher();
 
     Object.defineProperty(data, key, {

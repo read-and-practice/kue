@@ -1,10 +1,4 @@
 import { Watcher } from "./watcher";
-import Kue from "./kue";
-
-enum NodeType {
-  ElementNode = 1,
-  TextNode = 3
-}
 
 export class Compile {
   constructor(el, vm: object) {
@@ -19,11 +13,11 @@ export class Compile {
   }
 
   private static isElementNode(node: Node): boolean {
-    return node.nodeType === NodeType.ElementNode;
+    return node.nodeType === Node.ELEMENT_NODE;
   }
 
   private static isTextNode(node: Node): boolean {
-    return node.nodeType === NodeType.TextNode;
+    return node.nodeType === Node.TEXT_NODE;
   }
 
   private static node2Fragment(el: HTMLElement): DocumentFragment {
@@ -44,20 +38,19 @@ export class Compile {
 
   private compileElement(el: Element): void {
     const chilNodes = el.childNodes;
-    const _this = this;
 
     [].slice.call(chilNodes).forEach((node: Element) => {
       const text = node.textContent;
       
       if (Compile.isElementNode(node)) {
-        _this.compile(node);
+        this.compile(node);
       } else if (Compile.isTextNode(node) && Compile.expressionReg.test(text)) {
-        _this.compileText(node, RegExp.$1);
+        this.compileText(node, RegExp.$1);
       }
 
       // 遍历子节点
       if (node.childNodes && node.childNodes.length) {
-        _this.compileElement(node);
+        this.compileElement(node);
       }
 
     });
@@ -69,7 +62,6 @@ export class Compile {
 
   private compile(node: Element): void {
     const nodeAttrs = node.attributes;
-    const _this = this;
 
     [].slice.call(nodeAttrs).forEach((attr: Attr) => {
       // 指令以 k-xxx 命名
@@ -82,10 +74,10 @@ export class Compile {
 
         if (Compile.isEventDirective(directive)) {
           // 事件指令
-          CompileUtils.eventHandler(node, _this.$vm, exp, directive);
+          CompileUtils.eventHandler(node, this.$vm, exp, directive);
         } else {
           // 普通指令
-          CompileUtils[directive] && CompileUtils[directive](node, _this.$vm, exp);
+          CompileUtils[directive] && CompileUtils[directive](node, this.$vm, exp);
         }
 
         // 清除
@@ -123,15 +115,15 @@ class CompileUtils {
   static model(node: Node, vm: object, exp: string): void {
     this.bind(node, vm, exp, 'model');
 
-    const _this = this;
     let val = CompileUtils.getVMVal(vm, exp) as any;
+
     node.addEventListener('input', (ev: KeyboardEvent) => {
       const newValue = (ev.target as HTMLInputElement).value;
       if (val === newValue) {
         return;
       }  
 
-      _this.setVMVal(vm, exp, newValue);
+      this.setVMVal(vm, exp, newValue);
       val = newValue;
     });
 

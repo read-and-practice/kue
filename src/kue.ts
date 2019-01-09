@@ -10,10 +10,9 @@ export default class Kue {
   constructor(options: Options) {
     this.$options = options || {};
     const data = this._data = options.data;
-    const _this = this;
 
     Object.keys(data).forEach((key: string) => {
-      _this.proxyData(key);
+      this.proxyData(key);
     });
 
     this.initComputed();
@@ -35,14 +34,12 @@ export default class Kue {
   private _data;
 
   private proxyData(key: string): void {
-    const _this = this;
-
     Object.defineProperty(this, key, {
       get() {
-        return _this._data[key];
+        return this._data[key];
       },
       set(value) {
-        _this._data[key] = value;
+        this._data[key] = value;
       },
       enumerable: true,
       configurable: false,
